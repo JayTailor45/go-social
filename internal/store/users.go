@@ -29,7 +29,6 @@ func (s *UserStore) Create(ctx context.Context, user *User) error {
 		user.Email,
 	).Scan(
 		&user.ID,
-		&user.CreatedAt,
 	)
 	if err != nil {
 		return err

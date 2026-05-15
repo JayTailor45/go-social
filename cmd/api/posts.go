@@ -41,7 +41,7 @@ func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request
 	post := &store.Post{
 		Title:   payload.Title,
 		Content: payload.Content,
-		UsesrID: int64(userId),
+		UserID:  int64(userId),
 		Tags:    payload.Tags,
 	}
 

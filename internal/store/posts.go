@@ -12,7 +12,7 @@ type Post struct {
 	ID        int64     `json:"id"`
 	Content   string    `json:"content"`
 	Title     string    `json:"title"`
-	UsesrID   int64     `json:"user_id"`
+	UserID    int64     `json:"user_id"`
 	Tags      []string  `json:"tags"`
 	CreatedAt string    `json:"created_at"`
 	UpdatedAt string    `json:"updated_at"`
@@ -37,7 +37,7 @@ func (s *PostStore) Create(ctx context.Context, post *Post) error {
 		query,
 		post.Content,
 		post.Title,
-		post.UsesrID,
+		post.UserID,
 		pq.Array(post.Tags),
 	).Scan(
 		&post.ID,
@@ -63,7 +63,7 @@ func (s *PostStore) GetById(ctx context.Context, id int64) (*Post, error) {
 
 	err := s.db.QueryRowContext(ctx, query, id).Scan(
 		&post.ID,
-		&post.UsesrID,
+		&post.UserID,
 		&post.Title,
 		&post.Content,
 		pq.Array(&post.Tags),

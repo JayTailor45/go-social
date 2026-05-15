@@ -21,3 +21,15 @@ migrate -path=./cmd/migrate/migrations -database="postgres://admin:adminpassword
 ```
 migrate -path=./cmd/migrate/migrations -database="postgres://admin:adminpassword@localhost/social?sslmode=disable" down
 ```
+
+# Seed data
+
+```
+go run cmd/migrate/seed/main.go
+```
+
+# Run project
+
+```
+go run cmd/api/*.go
+```
