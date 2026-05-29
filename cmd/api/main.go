@@ -7,6 +7,7 @@ import (
 	"github.com/JayTailor45/go-social/internal/env"
 	"github.com/JayTailor45/go-social/internal/store"
 	"github.com/joho/godotenv"
+	"go.uber.org/zap"
 )
 
 const version = "0.0.1"
@@ -28,6 +29,11 @@ func main() {
 		env: env.GetString("ENV", "local"),
 	}
 
+	// Logger
+	logger := zap.Must(zap.NewProduction()).Sugar()
+	defer logger.Sync()
+
+	// database
 	db, err := db.New(
 		conf.db.addr,
 		conf.db.maxOpenConns,
@@ -36,17 +42,18 @@ func main() {
 	)
 
 	if err != nil {
-		log.Panic(err)
+		logger.Fatal(err)
 	}
 
 	defer db.Close()
-	log.Println("database connection pool established")
+	logger.Info("database connection pool established")
 
 	store := store.NewPostgresStorage(db)
 
 	app := &application{
 		config: conf,
 		store:  store,
+		logger: logger,
 	}
 
 	mux := app.mount()
