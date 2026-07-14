@@ -10,6 +10,8 @@ import (
 var (
 	ErrNotFound          = errors.New("resource not found")
 	ErrConflict          = errors.New("resource already exists")
+	ErrDuplicateEmail    = errors.New("email already exists")
+	ErrDuplicateUsername = errors.New("username already exists")
 	QueryTimeoutDuration = time.Second * 5
 )
 
@@ -22,8 +24,10 @@ type Storage struct {
 		GetUserFeed(context.Context, int64, PaginatedFeedQuery) ([]PostWithMetadata, error)
 	}
 	Users interface {
-		Create(context.Context, *User) error
+		Create(context.Context, *sql.Tx, *User) error
 		GetById(context.Context, int64) (*User, error)
+		CreateAndInvite(ctx context.Context, user *User, token string, expiry time.Duration) error
+		Activate(context.Context, string) error
 	}
 	Comments interface {
 		GetByPostID(context.Context, int64) ([]Comment, error)
@@ -42,4 +46,18 @@ func NewPostgresStorage(db *sql.DB) Storage {
 		Comments:  &CommentStore{db},
 		Followers: &FollowerStore{db},
 	}
+}
+
+func withTx(db *sql.DB, ctx context.Context, fn func(*sql.Tx) error) error {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	if err := fn(tx); err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	return tx.Commit()
 }

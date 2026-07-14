@@ -26,10 +26,30 @@ type FollowUser struct {
 	UserID int64 `json:"user_id"`
 }
 
+func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Request) {
+	token := chi.URLParam(r, "token")
+
+	if err := app.store.Users.Activate(r.Context(), token); err != nil {
+		switch err {
+		case store.ErrNotFound:
+			app.notFoundError(w, r, err)
+		default:
+			app.internalServerError(w, r, err)
+		}
+		return
+	}
+
+	// w.WriteHeader(http.StatusNoContent)
+
+	if err := app.jsonResponse(w, http.StatusNoContent, nil); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+}
+
 func (app *application) followUserHandler(w http.ResponseWriter, r *http.Request) {
 	followerUser := getUserFromContext(r)
 
-	// TODO: revert with user id from auth
 	var payload FollowUser
 	if err := ReadJSON(w, r, &payload); err != nil {
 		app.badRequestError(w, r, err)
